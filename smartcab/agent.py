@@ -1,5 +1,6 @@
 import random
 import math
+import operator
 from environment import Agent, Environment
 from planner import RoutePlanner
 from simulator import Simulator
@@ -81,7 +82,20 @@ class LearningAgent(Agent):
         ###########
         # Calculate the maximum Q-value of all actions for a given state
 
-        maxQ = max(self.Q[state].iterkeys(), key=(lambda k:self.Q[state][k]))
+        # maxQ = max(self.Q[state].iterkeys(), key=(lambda k:self.Q[state][k]))
+        
+        # This block is being adjusted based on review: it is required to implement the
+        # choose_action in such a way that it randomly selects from multiple actions
+        # if they are equal to maxQ value.
+        # begin
+        maxQ = []
+        Qvalue = max(self.Q[state].iteritems(), key=operator.itemgetter(1))[1]
+        
+        for action in self.Q[state]:
+            if self.Q[state][action] >= Qvalue:
+                maxQ.append(action)
+                
+        # end
 
         return maxQ 
 
@@ -122,7 +136,7 @@ class LearningAgent(Agent):
         if not self.learning or random.random() <= self.epsilon:
             action = random.choice(self.valid_actions)
         else:
-            action = self.get_maxQ(state)
+            action = random.choice(self.get_maxQ(state))
  
         return action
 
@@ -191,14 +205,14 @@ def run():
     #   display      - set to False to disable the GUI if PyGame is enabled
     #   log_metrics  - set to True to log trial and simulation results to /logs
     #   optimized    - set to True to change the default log file name
-    sim = Simulator(env, update_delay=0.01, display=True, log_metrics=False, optimized=True)
+    sim = Simulator(env, update_delay=0.01, display=True, log_metrics=True, optimized=True)
     
     ##############
     # Run the simulator
     # Flags:
     #   tolerance  - epsilon tolerance before beginning testing, default is 0.05 
     #   n_test     - discrete number of testing trials to perform, default is 0
-    sim.run(n_test=100, tolerance=0.01)
+    sim.run(n_test=100, tolerance=0.05)
 
 
 if __name__ == '__main__':
